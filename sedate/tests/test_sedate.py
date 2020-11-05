@@ -308,6 +308,19 @@ def test_align_date_to_month():
     assert sedate.align_date_to_month(date, 'UTC', 'up')\
         == datetime(2012, 2, 29, 23, 59, 59, 999999, tzinfo=UTC)
 
+    # Ensure that daylight-savings time is taken into account
+    timezone = sedate.ensure_timezone('Europe/Zurich')
+
+    # The beginning of this month is part of DST
+    date = datetime(2020, 10, 30, tzinfo=timezone)
+    assert not date.dst()
+    assert sedate.align_date_to_month(date, 'Europe/Zurich', 'down').dst()
+
+    # The end of this month is not part of DST
+    date = datetime(2020, 10, 1, tzinfo=timezone)
+    assert date.dst()
+    assert not sedate.align_date_to_month(date, 'Europe/Zurich', 'up').dst()
+
 
 @pytest.mark.parametrize('date', [
     datetime(2016, 3, 28, 15, tzinfo=UTC),
